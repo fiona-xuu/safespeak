@@ -1,98 +1,221 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Asset Constants
+const imgEllipse1 = "https://www.figma.com/api/mcp/asset/902d9389-c23c-4201-8d85-5d38c0b08f3a";
+const imgGroup18894 = "https://www.figma.com/api/mcp/asset/03792837-dce1-4d8c-8a26-0d775d5d1016"; // Sparkles
+const imgGroup18924 = "https://www.figma.com/api/mcp/asset/b5815492-61e7-4a28-af63-145beb2564a0";
+const imgEllipse207 = "https://www.figma.com/api/mcp/asset/bdb4d468-28ad-4ec7-b7fb-a1457a099d78"; // Green Dot
 
-export default function HomeScreen() {
+export default function DashboardScreen() {
+  const router = useRouter();
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <StatusBar style="dark" />
+      
+      {/* Background Hill */}
+      <Image 
+        source={{ uri: imgEllipse1 }} 
+        style={styles.bgEllipse} 
+        resizeMode="cover"
+      />
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* Decorative Sparkles */}
+      <Image source={imgGroup18894} style={[styles.sparkle, { left: 314, top: 766 }]} />
+      <Image source={imgGroup18894} style={[styles.sparkle, { left: 211, top: 583 }]} />
+      <Image source={imgGroup18894} style={[styles.sparkle, { left: 96, top: 686 }]} />
+      <Image source={imgGroup18924} style={[styles.sparkle, { left: 29, top: 785 }]} />
+      <Image source={imgGroup18924} style={[styles.sparkle, { left: 332, top: 593 }]} />
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Dashboard</Text>
+
+        {/* Current Status Card */}
+        <View style={styles.statusCard}>
+          <Text style={styles.cardTitle}>Current Status</Text>
+          <Text style={styles.cardSubtitle}>Activate to help you stay safe</Text>
+          
+          <View style={styles.idleTag}>
+             <Image source={imgEllipse207} style={styles.greenDot} />
+             <Text style={styles.idleText}>IDLE</Text>
+          </View>
+
+          <TouchableOpacity style={styles.startButton}>
+            <Text style={styles.startButtonText}>Start SafeSpeak</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Grid Menu */}
+        <View style={styles.gridContainer}>
+          {/* Record Button */}
+          <TouchableOpacity 
+            style={styles.gridButton} 
+            onPress={() => router.push('/(tabs)/voice')}
+          >
+            <View style={styles.gridIconContainer}>
+               <IconSymbol name="mic.fill" size={32} color="#000" />
+            </View>
+            <Text style={styles.gridLabel}>Record</Text>
+          </TouchableOpacity>
+
+          {/* Fake Call Button */}
+          <TouchableOpacity 
+            style={styles.gridButton}
+            onPress={() => router.push('/(tabs)/call')}
+          >
+            <View style={styles.gridIconContainer}>
+               <IconSymbol name="phone.fill" size={32} color="#000" />
+            </View>
+            <Text style={styles.gridLabel}>Fake Call</Text>
+          </TouchableOpacity>
+
+          {/* Emergency SOS Button - Spans full width visually in design but let's stick to grid or special styling */}
+          {/* Design shows it as a square in grid, wait. No, design has 4 squares. */}
+          {/* Design: Record(TL), Fake Call(TR), Emergency SOS(BL), Live Location(BR) */}
+          
+          {/* Emergency SOS */}
+          <TouchableOpacity style={styles.gridButton}>
+             <View style={styles.gridIconContainer}>
+               <IconSymbol name="house.fill" size={32} color="#000" /> 
+               {/* Using house as placeholder for SOS/Emergency icon if specific one isn't in mapping yet */}
+            </View>
+            <Text style={styles.gridLabel}>Emergency SOS</Text>
+          </TouchableOpacity>
+
+          {/* Live Location Share */}
+          <TouchableOpacity 
+            style={styles.gridButton}
+            onPress={() => router.push('/(tabs)/location')} 
+            // Note: Location tab was replaced by Call tab in previous turn, 
+            // but if we want to restore location features we might need another route or modal.
+            // For now, I'll point it to call or just leave it as placeholder since Location tab is gone.
+            // Actually, let's just log or alert.
+          >
+             <View style={styles.gridIconContainer}>
+               <IconSymbol name="location.fill" size={32} color="#000" />
+            </View>
+            <Text style={styles.gridLabel}>Live Location Share</Text>
+          </TouchableOpacity>
+
+        </View>
+
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: '#fcecf6',
+  },
+  bgEllipse: {
+    position: 'absolute',
+    width: '120%', 
+    height: 422,
+    left: -20,
+    bottom: 0,
+  },
+  sparkle: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingTop: 80,
+  },
+  title: {
+    fontFamily: 'System',
+    fontWeight: '700',
+    fontSize: 24,
+    color: '#000000',
+    marginBottom: 20,
+    marginLeft: 10,
+  },
+  statusCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 30,
+    padding: 20,
+    height: 195,
+    borderWidth: 1,
+    borderColor: '#966585',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  cardTitle: {
+    fontFamily: 'System',
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#000000',
+    marginBottom: 5,
+  },
+  cardSubtitle: {
+    fontFamily: 'System',
+    fontSize: 16,
+    color: '#966585',
+    marginBottom: 15,
+  },
+  idleTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#966585',
+    borderRadius: 30,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  greenDot: {
+    width: 15,
+    height: 15,
+    marginRight: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  idleText: {
+    fontWeight: '400',
+    fontSize: 14,
+  },
+  startButton: {
+    backgroundColor: '#faacdd', // Matching other buttons
+    borderRadius: 25,
+    paddingVertical: 15,
+    alignItems: 'center',
+    width: '100%',
+  },
+  startButtonText: {
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#000',
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 15,
+  },
+  gridButton: {
+    width: '47%', // roughly half minus gap
+    aspectRatio: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#966585',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  gridIconContainer: {
+    marginBottom: 10,
+  },
+  gridLabel: {
+    fontFamily: 'System',
+    fontWeight: '700',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });

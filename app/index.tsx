@@ -1,16 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-// Asset Constants (using remote URLs from Figma for now)
-const imgEllipse1 = "https://www.figma.com/api/mcp/asset/8ad9b305-2217-40af-a0d3-2165d7acf4f1";
-const imgGeminiGeneratedImageSngzz8Sngzz8SngzRemovebgPreview1 = "https://www.figma.com/api/mcp/asset/c772a36d-730c-41ce-92da-659cb93c32d2";
-// Decorative groups - omitting some minor decorative elements for cleaner initial implementation or using placeholders
-const imgGroup18894 = "https://www.figma.com/api/mcp/asset/45bac421-bfed-4ffd-98a0-4f47caa2866c";
-const imgGroup18924 = "https://www.figma.com/api/mcp/asset/3ee8f67d-a456-4c44-8e66-f5de2dcf0341";
+// Asset Constants from Figma (Updated)
+const imgGeminiGeneratedImageSngzz8Sngzz8SngzRemovebgPreview1 = "https://www.figma.com/api/mcp/asset/bb172f69-1565-42e7-915f-749b9f93153f";
+const imgMaskGroup = "https://www.figma.com/api/mcp/asset/69c666a5-6ccc-4a34-b7e9-2e4b4028a242"; // The new hill with mask
+const imgGroup18894 = "https://www.figma.com/api/mcp/asset/a36d5b57-5982-4cfc-b289-7dc59abbef59";
+const imgGroup18890 = "https://www.figma.com/api/mcp/asset/6d76fc09-a4c0-4bcb-aa75-06ce3a48972c";
+const imgGroup18891 = "https://www.figma.com/api/mcp/asset/3b2a0518-a4f2-42e4-aa24-1bb34eb1046b";
+const imgGroup18924 = "https://www.figma.com/api/mcp/asset/5051b8ae-2837-4e00-9f08-66e3548bed88";
+const imgEllipse204 = "https://www.figma.com/api/mcp/asset/50108afd-903a-422e-8bba-86fa7075f092";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -19,29 +20,39 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Background Ellipse */}
+      {/* Background Hill (Mask Group) */}
       <Image 
-        source={{ uri: imgEllipse1 }} 
-        style={styles.bgEllipse} 
-        contentFit="cover"
+        source={{ uri: imgMaskGroup }} 
+        style={styles.bgHill} 
+        resizeMode="cover"
       />
 
-      {/* Decorative Elements */}
-      <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 314, top: 766 }]} />
-      <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 211, top: 590 }]} />
-      <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 96, top: 686 }]} />
-      <Image source={{ uri: imgGroup18924 }} style={[styles.decoStar, { left: 29, top: 785 }]} />
-      <Image source={{ uri: imgGroup18924 }} style={[styles.decoStar, { left: 332, top: 593 }]} />
+      {/* Flowers on the hill - adjusted positions relative to bottom/hill */}
+      <View style={styles.decorationsContainer}>
+          <Image source={{ uri: imgGroup18894 }} style={[styles.sparkle, { left: 314, top: 219 }]} resizeMode="contain" />
+          <Image source={{ uri: imgGroup18894 }} style={[styles.sparkle, { left: 211, top: 43 }]} resizeMode="contain" />
+          <Image source={{ uri: imgGroup18894 }} style={[styles.sparkle, { left: 96, top: 139 }]} resizeMode="contain" />
+          
+          <Image source={{ uri: imgGroup18890 }} style={[styles.flower, { left: 267, top: 102 }]} resizeMode="contain" />
+          <Image source={{ uri: imgGroup18891 }} style={[styles.flower, { left: 49, top: 66 }]} resizeMode="contain" />
+          <Image source={{ uri: imgGroup18924 }} style={[styles.flower, { left: 184, top: 211 }]} resizeMode="contain" />
+          
+          <Image source={{ uri: imgGroup18924 }} style={[styles.sparkle, { left: 29, top: 238 }]} resizeMode="contain" />
+          <Image source={{ uri: imgGroup18924 }} style={[styles.sparkle, { left: 332, top: 46 }]} resizeMode="contain" />
+      </View>
 
-      {/* Main Content */}
+      {/* Welcome Text */}
       <Text style={styles.title}>Welcome to SafeSpeak</Text>
 
-      {/* Mascot Image */}
+      {/* Mascot Section */}
       <View style={styles.mascotContainer}>
+        {/* Shadow under mascot */}
+        <Image source={{ uri: imgEllipse204 }} style={styles.mascotShadow} resizeMode="contain" />
+        {/* Mascot Image */}
         <Image 
           source={{ uri: imgGeminiGeneratedImageSngzz8Sngzz8SngzRemovebgPreview1 }} 
           style={styles.mascot} 
-          contentFit="contain"
+          resizeMode="contain"
         />
       </View>
 
@@ -63,15 +74,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#fcecf6',
     position: 'relative',
   },
-  bgEllipse: {
+  bgHill: {
     position: 'absolute',
-    width: 646,
-    height: 422,
-    left: -126,
-    top: 547,
+    width: '100%',
+    height: 305, // From Figma
+    bottom: 0,
+    left: 0,
+  },
+  decorationsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: 305, // Match hill height to position flowers relative to it
+    zIndex: 1,
+  },
+  flower: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+  },
+  sparkle: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
   },
   title: {
-    fontFamily: 'System', // 'Inter-Bold' in design, falling back to System for now
+    fontFamily: 'System', 
     fontWeight: '700',
     fontSize: 24,
     color: '#000000',
@@ -84,13 +113,21 @@ const styles = StyleSheet.create({
     left: 108,
     top: 399,
     width: 177,
-    height: 187,
+    height: 187 + 23, 
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 2, 
   },
   mascot: {
     width: '100%',
-    height: '100%',
+    height: 187,
+  },
+  mascotShadow: {
+    position: 'absolute',
+    width: 71,
+    height: 23,
+    bottom: 0, 
+    left: 52, 
   },
   button: {
     position: 'absolute',
@@ -103,23 +140,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#267a60',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.28,
     shadowRadius: 20,
     elevation: 5,
+    zIndex: 10,
   },
   buttonText: {
-    fontFamily: 'System', // 'Inter-Regular'
+    fontFamily: 'System',
     fontSize: 20,
     color: '#000000',
   },
-  decoStar: {
-    position: 'absolute',
-    width: 36,
-    height: 36,
-  }
 });
-
