@@ -1,6 +1,6 @@
 import { Audio } from "expo-av";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { sendAudioToLLM } from "../../src/services/llm";
 
 export default function RecordScreen() {
@@ -11,11 +11,6 @@ export default function RecordScreen() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Check if there's a recording on mount
-  useEffect(() => {
-    checkForRecording();
-  }, []);
-
   // Cleanup sounds on unmount or when sounds change
   useEffect(() => {
     return () => {
@@ -24,140 +19,6 @@ export default function RecordScreen() {
       }
     };
   }, [sound]);
-
-  async function playAiResponse(audioBase64: string) {
-    try {
-      // Convert base64 to audio URI
-      const audioUri = `data:audio/mpeg;base64,${audioBase64}`;
-
-      // Configure audio mode for playback
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        playsInSilentModeIOS: true,
-      });
-
-      const { sound: responseSound } = await Audio.Sound.createAsync(
-        { uri: audioUri },
-        { shouldPlay: true }
-      );
-
-      setIsPlayingResponse(true);
-
-      responseSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          setIsPlayingResponse(false);
-          responseSound.unloadAsync();
-        }
-      });
-    } catch (error) {
-      console.error("Error playing AI response:", error);
-      setIsPlayingResponse(false);
-    }
-  }
-
-  async function checkForRecording() {
-    const exists = await hasMostRecentRecording();
-    setHasRecording(exists);
-  }
-
-  async function handlePress() {
-    if (!isRecording) {
-      // Stop any currently playing audio
-      if (sound) {
-        await sound.unloadAsync();
-        setSound(null);
-        setIsPlaying(false);
-      }
-      
-      await startRecording();
-      setIsRecording(true);
-      setHasRecording(false); // New recording in progress
-    } else {
-      const uri = await stopRecording();
-      setIsRecording(false);
-
-      if (uri) {
-        setHasRecording(true);
-        setLoading(true);
-        setResponse(null); // Clear previous response
-        try {
-          console.log("Sending audio to LLM, URI:", uri);
-          const result = await sendAudioToLLM(uri);
-          console.log("Received response from LLM:", result);
-
-          // Handle new response format
-          if (typeof result === 'object' && result.textResponse) {
-            setResponse(result.textResponse);
-            if (result.audioResponse) {
-              setAiResponseAudio(result.audioResponse);
-              // Auto-play the AI response
-              playAiResponse(result.audioResponse);
-            }
-          } else {
-            // Fallback for old format
-            setResponse(result as string);
-          }
-        } catch (error) {
-          console.error("Error processing audio:", error);
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          setResponse(`Sorry, there was an error processing your audio: ${errorMessage}`);
-        } finally {
-          setLoading(false);
-        }
-      }
-    }
-  }
-
-  async function handlePlayRecording() {
-    if (isPlaying && sound) {
-      // Stop if currently playing
-      await sound.stopAsync();
-      await sound.unloadAsync();
-      setSound(null);
-      setIsPlaying(false);
-      return;
-    }
-
-    try {
-      // Check if recording exists first
-      const exists = await hasMostRecentRecording();
-      if (!exists) {
-        alert("No recording available to play");
-        return;
-      }
-
-      const uri = getMostRecentRecordingUri();
-      if (!uri) {
-        alert("No recording available to play");
-        return;
-      }
-
-      // Configure audio mode for playback
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        playsInSilentModeIOS: true,
-      });
-
-      const { sound: playbackSound } = await Audio.Sound.createAsync(
-        { uri },
-        { shouldPlay: true }
-      );
-
-      setSound(playbackSound);
-      setIsPlaying(true);
-
-      playbackSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          setIsPlaying(false);
-          playbackSound.unloadAsync();
-          setSound(null);
-        }
-      });
-    } catch (error) {
-      console.error("Error playing recording:", error);
-      alert("Error playing recording");
-    }
-  }
 
   // Request microphone permissions and cleanup on mount/unmount
   useEffect(() => {
@@ -238,9 +99,6 @@ export default function RecordScreen() {
         try {
           const result = await sendAudioToLLM(uri);
           console.log('AI response received:', result);
-          console.log('Result type:', typeof result);
-          console.log('Has textResponse:', result && typeof result === 'object' && 'textResponse' in result);
-          console.log('Has audioResponse:', result && typeof result === 'object' && 'audioResponse' in result);
 
           if (result && typeof result === 'object' && result.textResponse) {
             setResponse(result.textResponse);
@@ -254,7 +112,6 @@ export default function RecordScreen() {
           }
         } catch (error) {
           console.error('Error processing audio:', error);
-          console.error('Error details:', error instanceof Error ? error.message : String(error));
           setResponse(`Sorry, there was an error processing your audio: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
           setLoading(false);
@@ -327,45 +184,6 @@ export default function RecordScreen() {
       </View>
 
       {loading && <ActivityIndicator size="large" style={styles.loader} />}
-
-      {/* Keep the old UI as backup for now */}
-      {false && (
-        <>
-          <Button
-            title={isRecording ? "Stop Recording" : "Start Recording"}
-            onPress={handlePress}
-            disabled={loading}
-          />
-
-          {hasRecording && !isRecording && (
-            <Button
-              title={isPlaying ? "Stop Playback" : "Play Most Recent Recording"}
-              onPress={handlePlayRecording}
-              disabled={loading}
-            />
-          )}
-
-          {aiResponseAudio && (
-            <Button
-              title={isPlayingResponse ? "Stop AI Response" : "Replay AI Response"}
-              onPress={() => playAiResponse(aiResponseAudio)}
-              disabled={loading}
-            />
-          )}
-
-          {loading && <ActivityIndicator size="large" style={styles.loader} />}
-
-          {response && (
-            <View style={styles.responseContainer}>
-              <Text style={styles.responseTitle}>AI Response:</Text>
-              <Text style={styles.responseText}>{response}</Text>
-              {aiResponseAudio && (
-                <Text style={styles.audioNote}>🎵 AI response will be spoken automatically</Text>
-              )}
-            </View>
-          )}
-        </>
-      )}
     </View>
   );
 }
@@ -449,4 +267,3 @@ const styles = StyleSheet.create({
     color: "#555",
   },
 });
-
