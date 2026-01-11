@@ -11,7 +11,6 @@ export default function RecordScreen() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Cleanup sounds on unmount or when sounds change
   useEffect(() => {
     return () => {
       if (sound) {
@@ -20,7 +19,6 @@ export default function RecordScreen() {
     };
   }, [sound]);
 
-  // Request microphone permissions and cleanup on mount/unmount
   useEffect(() => {
     (async () => {
       try {
@@ -33,7 +31,6 @@ export default function RecordScreen() {
       }
     })();
 
-    // Cleanup function
     return () => {
       if (recording) {
         recording.stopAndUnloadAsync().catch(console.error);
