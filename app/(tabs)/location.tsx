@@ -1,278 +1,161 @@
 import * as Location from 'expo-location';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+// Reusing assets from dashboard to maintain consistent style
+const imgEllipse1 = "https://www.figma.com/api/mcp/asset/902d9389-c23c-4201-8d85-5d38c0b08f3a";
+const imgGroup18894 = "https://www.figma.com/api/mcp/asset/03792837-dce1-4d8c-8a26-0d775d5d1016"; // Sparkles
+const imgGroup18924 = "https://www.figma.com/api/mcp/asset/b5815492-61e7-4a28-af63-145beb2564a0";
 
 export default function LocationScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState<Location.LocationSubscription | null>(null);
-  const [forceUpdateInterval, setForceUpdateInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     return () => {
       if (locationSubscription) {
         locationSubscription.remove();
       }
-      if (forceUpdateInterval) {
-        clearInterval(forceUpdateInterval);
-      }
     };
-  }, [locationSubscription, forceUpdateInterval]);
-
-  // Debug: Monitor location state changes
-  useEffect(() => {
-    if (location) {
-      console.log('🎯 LOCATION STATE UPDATED:', {
-        coords: location.coords,
-        timestamp: new Date(location.timestamp).toLocaleTimeString(),
-        fullLocation: location
-      });
-    }
-  }, [location]);
+  }, [locationSubscription]);
 
   const startLocationTracking = async () => {
     try {
-      console.log('Requesting location permissions...');
-      // Request permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
-      console.log('Permission status:', status);
-
       if (status !== 'granted') {
-        setErrorMsg('Location permission denied');
-        Alert.alert('Permission Required', 'Location permission is required to track your live location.');
+        setErrorMsg('Permission to access location was denied');
         return;
       }
 
-      console.log('Starting location tracking...');
       setIsTracking(true);
       setErrorMsg(null);
 
-      // Try a different approach - use polling instead of watchPositionAsync
-      console.log('Starting location polling every 5 seconds...');
-      let pollCount = 0;
-
-      const interval = setInterval(() => {
-        pollCount++;
-        const currentTime = new Date().toLocaleTimeString();
-        console.log(`🔄 FORCE UPDATE #${pollCount} at ${currentTime}`);
-
-        // FORCE UI UPDATE: Always update timestamp every 5 seconds
-        setLocation(current => {
-          if (current) {
-            const updated = {
-              ...current,
-              timestamp: Date.now(), // Force fresh timestamp
-            };
-            console.log('✅ UI updated with timestamp:', new Date(updated.timestamp).toLocaleTimeString());
-            return updated;
-          }
-          return current;
-        });
-
-        // Try to get GPS data in background (doesn't block UI update)
-        Location.getCurrentPositionAsync({
+      // Start watching position
+      const subscription = await Location.watchPositionAsync(
+        {
           accuracy: Location.Accuracy.Highest,
-        }).then(newLocation => {
-          console.log('📍 GPS data:', newLocation.coords);
-          setLocation(current => ({
-            ...newLocation,
-            timestamp: Date.now(), // Ensure fresh timestamp
-          }));
-        }).catch(err => {
-          console.log('⚠️ GPS failed, but UI updates continue');
-        });
-
-      }, 5000);
-
-      setForceUpdateInterval(interval);
-
-      // Add a separate force UI update interval to ensure timestamp refreshes every 5 seconds
-      const forceUIUpdateInterval = setInterval(() => {
-        console.log('🔄 FORCE UI UPDATE: Refreshing timestamp at', new Date().toLocaleTimeString());
-        setLocation(currentLocation => {
-          if (currentLocation) {
-            // Create a new object with updated timestamp to force UI refresh
-            const updatedLocation = {
-              ...currentLocation,
-              timestamp: Date.now(), // Force new timestamp
-            };
-            console.log('✅ UI timestamp updated to:', new Date(updatedLocation.timestamp).toLocaleTimeString());
-            return updatedLocation;
-          }
-          return currentLocation;
-        });
-      }, 5000);
-
-      // Store the force update interval separately
-      // Note: We'll need to manage both intervals
-      setTimeout(() => setForceUpdateInterval(forceUIUpdateInterval), 100); // Small delay to avoid conflict
-
-      // Also try watchPositionAsync as backup
-      try {
-        console.log('Setting up location watch as backup...');
-        const subscription = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.Highest,
-            distanceInterval: 1,
-          },
-          (newLocation) => {
-            console.log('🎯 WATCH CALLBACK: Location changed!');
-            console.log('Watch callback coords:', newLocation.coords);
-            console.log('Watch callback timestamp:', new Date(newLocation.timestamp).toLocaleTimeString());
-            setLocation(newLocation);
-          }
-        );
-
-        console.log('Watch subscription created');
-        setLocationSubscription(subscription);
-      } catch (watchError) {
-        console.error('Error setting up watch:', watchError);
-      }
-
+          timeInterval: 5000,
+          distanceInterval: 10,
+        },
+        (newLocation) => {
+          setLocation(newLocation);
+        }
+      );
+      setLocationSubscription(subscription);
     } catch (error) {
-      console.error('Error starting location tracking:', error);
-      setErrorMsg('Failed to start location tracking');
+      console.error(error);
       setIsTracking(false);
     }
   };
 
   const stopLocationTracking = () => {
-    console.log('Stopping location tracking...');
     if (locationSubscription) {
-      console.log('Removing location subscription');
       locationSubscription.remove();
       setLocationSubscription(null);
-    } else {
-      console.log('No location subscription to remove');
     }
-
-    if (forceUpdateInterval) {
-      console.log('Clearing force update interval');
-      clearInterval(forceUpdateInterval);
-      setForceUpdateInterval(null);
-    }
-
     setIsTracking(false);
-    setLocation(null);
   };
 
   const getCurrentLocation = async () => {
     try {
-      // Request permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== 'granted') {
-        setErrorMsg('Location permission denied');
-        Alert.alert('Permission Required', 'Location permission is required to get your current location.');
+        setErrorMsg('Permission to access location was denied');
         return;
       }
 
-      setErrorMsg(null);
-
-      // Get current position
-      const currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Highest,
-      });
-
+      const currentLocation = await Location.getCurrentPositionAsync({});
       setLocation(currentLocation);
-      console.log('Current location:', currentLocation.coords);
-
     } catch (error) {
-      console.error('Error getting current location:', error);
-      setErrorMsg('Failed to get current location');
+      console.error(error);
     }
   };
 
-  const formatCoordinates = (locationObj: Location.LocationObject) => {
-    console.log('📊 formatCoordinates called with:', {
-      coords: locationObj.coords,
-      timestamp: new Date(locationObj.timestamp).toLocaleTimeString()
-    });
-
-    const coords = locationObj.coords;
-    const result = {
-      latitude: coords.latitude.toFixed(6),
-      longitude: coords.longitude.toFixed(6),
-      accuracy: coords.accuracy ? `${Math.round(coords.accuracy)}m` : 'Unknown',
-      timestamp: new Date(locationObj.timestamp).toLocaleTimeString(),
-    };
-
-    console.log('📊 formatCoordinates returning:', result);
-    return result;
-  };
+  const formatCoordinate = (coord: number) => coord.toFixed(6);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Live Location</Text>
+      <StatusBar style="dark" />
 
-      <Text style={styles.subtitle}>
-        {isTracking ? 'Live tracking your location' : 'Get your current location or start live tracking'}
-      </Text>
+      {/* Background Hill (Consistent with Dashboard) */}
+      <Image 
+        source={{ uri: imgEllipse1 }} 
+        style={styles.bgEllipse} 
+        resizeMode="cover"
+      />
 
-      {/* Control Buttons */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.primaryButton]}
-          onPress={getCurrentLocation}
-          disabled={isTracking}
-        >
-          <Text style={styles.buttonText}>
-            {isTracking ? 'Tracking Active' : 'Get Current Location'}
+      {/* Decorative Sparkles */}
+      <Image source={{ uri: imgGroup18894 }} style={[styles.sparkle, { left: 314, top: 766 }]} />
+      <Image source={{ uri: imgGroup18894 }} style={[styles.sparkle, { left: 211, top: 583 }]} />
+      <Image source={{ uri: imgGroup18924 }} style={[styles.sparkle, { left: 29, top: 785 }]} />
+      
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Live Location</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Location Status</Text>
+          <Text style={styles.cardSubtitle}>
+            {isTracking ? 'Currently tracking your location' : 'Tracking is inactive'}
           </Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, isTracking ? styles.stopButton : styles.secondaryButton]}
-          onPress={isTracking ? stopLocationTracking : startLocationTracking}
-        >
-          <Text style={[styles.buttonText, isTracking && styles.stopButtonText]}>
-            {isTracking ? 'Stop Tracking' : 'Start Live Tracking'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {location ? (
+            <View style={styles.locationInfo}>
+              <View style={styles.coordinateRow}>
+                <Text style={styles.coordinateLabel}>Latitude:</Text>
+                <Text style={styles.coordinateValue}>{formatCoordinate(location.coords.latitude)}</Text>
+              </View>
+              <View style={styles.coordinateRow}>
+                <Text style={styles.coordinateLabel}>Longitude:</Text>
+                <Text style={styles.coordinateValue}>{formatCoordinate(location.coords.longitude)}</Text>
+              </View>
+              {location.coords.accuracy && (
+                <View style={styles.coordinateRow}>
+                  <Text style={styles.coordinateLabel}>Accuracy:</Text>
+                  <Text style={styles.coordinateValue}>±{Math.round(location.coords.accuracy)}m</Text>
+                </View>
+              )}
+              <Text style={styles.timestamp}>
+                Last updated: {new Date(location.timestamp).toLocaleTimeString()}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.noLocationText}>No location data available</Text>
+          )}
 
-      {/* Location Display */}
-      {location && (
-        <View style={styles.locationContainer}>
-          <Text style={styles.locationTitle}>Current Location:</Text>
-          <View style={styles.locationDetails}>
-            <Text style={styles.coordinateText}>
-              📍 Latitude: {formatCoordinates(location).latitude}
-            </Text>
-            <Text style={styles.coordinateText}>
-              📍 Longitude: {formatCoordinates(location).longitude}
-            </Text>
-            <Text style={styles.accuracyText}>
-              🎯 Accuracy: {formatCoordinates(location).accuracy}
-            </Text>
-            <Text style={styles.timestampText}>
-              ⏰ Last Update: {formatCoordinates(location).timestamp}
-            </Text>
+          {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity 
+              style={[styles.button, styles.primaryButton]} 
+              onPress={isTracking ? stopLocationTracking : startLocationTracking}
+            >
+              <Text style={styles.buttonText}>
+                {isTracking ? 'Stop Tracking' : 'Start Live Tracking'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.button, styles.secondaryButton]} 
+              onPress={getCurrentLocation}
+              disabled={isTracking}
+            >
+              <Text style={[styles.buttonText, styles.secondaryButtonText]}>Get Current Location</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      )}
 
-      {/* Status Messages */}
-      {isTracking && (
-        <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>📡 Live tracking active - Location updates every 5 seconds</Text>
-        </View>
-      )}
-
-      {errorMsg && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>❌ {errorMsg}</Text>
-        </View>
-      )}
-
-      {!location && !errorMsg && !isTracking && (
-        <View style={styles.instructionContainer}>
-          <Text style={styles.instructionText}>
-            Tap "Get Current Location" for a one-time location fix, or "Start Live Tracking" for continuous updates.
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>About Live Location</Text>
+          <Text style={styles.infoText}>
+            Sharing your location helps your trusted contacts know where you are in case of an emergency. 
+            Location data is encrypted and only shared when you activate this feature.
           </Text>
         </View>
-      )}
+
+      </ScrollView>
     </View>
   );
 }
@@ -280,121 +163,149 @@ export default function LocationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fcecf6', // Consistent background color
+  },
+  bgEllipse: {
+    position: 'absolute',
+    width: '120%', 
+    height: 422,
+    left: -20,
+    bottom: 0,
+    opacity: 0.8,
+  },
+  sparkle: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+  },
+  scrollContent: {
     padding: 20,
+    paddingTop: 80,
+    paddingBottom: 40,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginTop: 60,
-    marginBottom: 10,
+    fontFamily: 'System',
+    fontWeight: '700',
+    fontSize: 24,
+    color: '#000000',
+    marginBottom: 20,
+    marginLeft: 10,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 22,
-  },
-  buttonContainer: {
-    gap: 15,
-    marginBottom: 30,
-  },
-  button: {
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 30,
+    padding: 25,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#966585',
+    shadowColor: '#8d234b',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  primaryButton: {
-    backgroundColor: '#007AFF',
+  cardTitle: {
+    fontFamily: 'System',
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#000000',
+    marginBottom: 5,
   },
-  secondaryButton: {
-    backgroundColor: '#34C759',
+  cardSubtitle: {
+    fontFamily: 'System',
+    fontSize: 14,
+    color: '#966585',
+    marginBottom: 20,
   },
-  stopButton: {
-    backgroundColor: '#FF3B30',
+  locationInfo: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#eee',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
+  coordinateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  coordinateLabel: {
+    fontSize: 14,
+    color: '#666',
     fontWeight: '600',
   },
-  stopButtonText: {
-    color: '#fff',
-  },
-  locationContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  locationTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  coordinateValue: {
+    fontSize: 14,
     color: '#333',
-    marginBottom: 15,
+    fontFamily: 'System', // Monospace font not strictly required if System looks good
+    fontWeight: '500',
   },
-  locationDetails: {
-    gap: 10,
+  timestamp: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 8,
+    textAlign: 'right',
+    fontStyle: 'italic',
   },
-  coordinateText: {
-    fontSize: 16,
-    color: '#333',
-    fontFamily: 'monospace',
-  },
-  accuracyText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  timestampText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 5,
-  },
-  statusContainer: {
-    backgroundColor: '#E3F2FD',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-  },
-  statusText: {
-    color: '#1976D2',
-    fontSize: 14,
+  noLocationText: {
     textAlign: 'center',
-  },
-  errorContainer: {
-    backgroundColor: '#FFEBEE',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    color: '#999',
+    fontStyle: 'italic',
+    marginBottom: 20,
+    padding: 20,
   },
   errorText: {
     color: '#D32F2F',
-    fontSize: 14,
+    marginBottom: 15,
     textAlign: 'center',
   },
-  instructionContainer: {
-    backgroundColor: '#FFF3E0',
-    borderRadius: 10,
+  buttonGroup: {
+    gap: 12,
+  },
+  button: {
+    borderRadius: 25,
+    paddingVertical: 15,
+    alignItems: 'center',
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  primaryButton: {
+    backgroundColor: '#faacdd',
+  },
+  secondaryButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#faacdd',
+  },
+  buttonText: {
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#ffffff',
+  },
+  secondaryButtonText: {
+    color: '#faacdd',
+  },
+  infoCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 20,
     padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(150, 101, 133, 0.2)',
   },
-  instructionText: {
-    color: '#E65100',
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 22,
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
   },
 });

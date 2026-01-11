@@ -1,3 +1,4 @@
+import { GreenHillSvg } from '@/components/ui/GreenHillSvg';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -20,12 +21,10 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Background Hill (Mask Group) */}
-      <Image 
-        source={{ uri: imgMaskGroup }} 
-        style={styles.bgHill} 
-        resizeMode="cover"
-      />
+      {/* Background Hill (SVG) */}
+      <View style={styles.bgHill}>
+        <GreenHillSvg />
+      </View>
 
       {/* Flowers on the hill - adjusted positions relative to bottom/hill */}
       <View style={styles.decorationsContainer}>
@@ -110,24 +109,25 @@ const styles = StyleSheet.create({
   },
   mascotContainer: {
     position: 'absolute',
-    left: 108,
-    top: 399,
-    width: 177,
-    height: 187 + 23, 
+    left: '50%', // Start from center
+    marginLeft: -(177 * 1.5), // Shift back by half width (width is 177*3 = 531)
+    top: '17%', // Adjusted top position
+    width: 177 * 3,
+    height: (187 + 23) * 3, 
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2, 
   },
   mascot: {
     width: '100%',
-    height: 187,
+    height: 187*3,
   },
   mascotShadow: {
     position: 'absolute',
-    width: 71,
-    height: 23,
-    bottom: 0, 
-    left: 52, 
+    width: 71*3,
+    height: 23*3,
+    bottom: 40, // Adjusted bottom to sit correctly under feet
+    // Remove left: 52 to let alignItems: center handle it
   },
   button: {
     position: 'absolute',

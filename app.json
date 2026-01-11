@@ -10,7 +10,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "This app needs microphone access to enable voice conversations with the AI assistant."
+        "NSMicrophoneUsageDescription": "This app needs microphone access to enable voice conversations with the AI assistant.",
+        "NSLocationWhenInUseUsageDescription": "This app needs your location to provide safety features and emergency assistance."
       },
       "bundleIdentifier": "com.anonymous.safespeak"
     },
@@ -25,7 +26,9 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -44,6 +47,12 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ]
     ],

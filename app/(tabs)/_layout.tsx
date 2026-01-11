@@ -35,7 +35,7 @@ export default function TabLayout() {
         name="voice"
         options={{
           title: 'Voice',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="mic.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="phone.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -43,13 +43,6 @@ export default function TabLayout() {
         options={{
           title: 'Location',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="location.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="call"
-        options={{
-          title: 'Fake Call',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="phone.fill" color={color} />,
         }}
       />
       <Tabs.Screen

@@ -1,3 +1,4 @@
+import { GreenHillSvg } from '@/components/ui/GreenHillSvg';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -55,12 +56,10 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Background Ellipse */}
-      <Image 
-        source={{ uri: imgEllipse1 }} 
-        style={styles.bgEllipse} 
-        resizeMode="cover"
-      />
+      {/* Background Hill (SVG) */}
+      <View style={styles.bgHill}>
+        <GreenHillSvg height={422} />
+      </View>
 
       {/* Decorative Elements */}
       <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 314, top: 766 }]} />
@@ -148,12 +147,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     minHeight: 800, 
   },
-  bgEllipse: {
+  bgHill: {
     position: 'absolute',
-    width: 646,
+    width: '100%',
     height: 422,
-    left: -126,
-    top: 547,
+    left: 0,
+    top: 547, // Adjusting to match previous position relative to top
+    zIndex: 0,
   },
   title: {
     fontFamily: 'System',

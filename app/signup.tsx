@@ -1,3 +1,4 @@
+import { GreenHillSvg } from '@/components/ui/GreenHillSvg';
 import { Feather, SimpleLineIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -6,7 +7,6 @@ import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, T
 import { supabase } from '../lib/supabase';
 
 // Asset Constants
-const imgEllipse1 = "https://www.figma.com/api/mcp/asset/4ac6a033-9603-4210-8f80-e930e47c060f";
 const imgGeminiGeneratedImageSngzz8Sngzz8SngzRemovebgPreview1 = "https://www.figma.com/api/mcp/asset/5b6155a6-3c10-42b3-aaaf-4adb0802c476";
 const imgGroup18894 = "https://www.figma.com/api/mcp/asset/36a25015-323b-4e63-b13d-11d58dc55d27";
 const imgGroup18924 = "https://www.figma.com/api/mcp/asset/6a8b21e0-34c9-4fcd-89aa-9840c4f5a8ec";
@@ -51,12 +51,10 @@ export default function SignupScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Background Ellipse */}
-      <Image 
-        source={{ uri: imgEllipse1 }} 
-        style={styles.bgEllipse} 
-        resizeMode="cover"
-      />
+      {/* Background Hill (SVG) */}
+      <View style={styles.bgHill}>
+        <GreenHillSvg height={422} />
+      </View>
 
       {/* Decorative Elements */}
       <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 314, top: 766 }]} />
@@ -157,12 +155,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     minHeight: 800,
   },
-  bgEllipse: {
+  bgHill: {
     position: 'absolute',
-    width: 646,
+    width: '100%',
     height: 422,
-    left: -126,
+    left: 0,
     top: 547,
+    zIndex: 0,
   },
   title: {
     fontFamily: 'System',
