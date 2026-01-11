@@ -11,7 +11,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSMicrophoneUsageDescription": "This app needs microphone access to enable voice conversations with the AI assistant."
-      }
+      },
+      "bundleIdentifier": "com.anonymous.safespeak"
     },
     "android": {
       "adaptiveIcon": {
