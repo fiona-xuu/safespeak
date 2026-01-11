@@ -1,4 +1,5 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useSafeSpeak } from '@/contexts/SafeSpeakContext';
 import { Audio } from "expo-av";
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -13,6 +14,7 @@ export default function VoiceScreen() {
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const { status, setStatus } = useSafeSpeak();
 
   // Refs for safe cleanup
   const recordingRef = useRef<Audio.Recording | null>(null);
@@ -60,6 +62,9 @@ export default function VoiceScreen() {
 
   async function recordAndProcess() {
     try {
+      // Set status to indicate features have been used
+      setStatus('has_used_features');
+
       // Stop any existing recording first
       if (recording) {
         console.log('Stopping existing recording...');

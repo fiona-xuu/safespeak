@@ -1,7 +1,9 @@
 import { GreenHillSvg } from '@/components/ui/GreenHillSvg';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useSafeSpeak } from '@/contexts/SafeSpeakContext';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Asset Constants
@@ -12,6 +14,33 @@ const imgEllipse207 = "https://www.figma.com/api/mcp/asset/bdb4d468-28ad-4ec7-b7
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const [isSafeSpeakActive, setIsSafeSpeakActive] = useState(false);
+  const { status, setStatus } = useSafeSpeak();
+
+  const handleSafeSpeakToggle = () => {
+    const newActiveState = !isSafeSpeakActive;
+    setIsSafeSpeakActive(newActiveState);
+    // When ending SafeSpeak (turning off), always reset to idle
+    setStatus(newActiveState ? 'active' : 'idle');
+  };
+
+  // Determine dot color based on SafeSpeak status
+  const getDotStyle = () => {
+    if (status === 'has_used_features') {
+      return styles.yellowDot;
+    } else if (status === 'active') {
+      return styles.greenDot;
+    } else {
+      return styles.grayDot;
+    }
+  };
+
+  // Determine status text
+  const getStatusText = () => {
+    if (status === 'has_used_features') return 'TRACKING';
+    if (status === 'active') return 'ACTIVE';
+    return 'IDLE';
+  };
 
   return (
     <View style={styles.container}>
@@ -47,12 +76,17 @@ export default function DashboardScreen() {
           <Text style={styles.cardSubtitle}>Activate to help you stay safe</Text>
           
           <View style={styles.idleTag}>
-             <Image source={{ uri: imgEllipse207 }} style={styles.greenDot} />
-             <Text style={styles.idleText}>IDLE</Text>
+             <View style={getDotStyle()} />
+             <Text style={styles.idleText}>{getStatusText()}</Text>
           </View>
 
-          <TouchableOpacity style={styles.startButton}>
-            <Text style={styles.startButtonText}>Start SafeSpeak</Text>
+          <TouchableOpacity
+            style={[styles.startButton, isSafeSpeakActive && styles.endButton]}
+            onPress={handleSafeSpeakToggle}
+          >
+            <Text style={styles.startButtonText}>
+              {isSafeSpeakActive ? 'End SafeSpeak' : 'Start SafeSpeak'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -154,9 +188,25 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginBottom: 20,
   },
+  grayDot: {
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
+    backgroundColor: '#666666',
+    marginRight: 8,
+  },
   greenDot: {
     width: 15,
     height: 15,
+    borderRadius: 7.5,
+    backgroundColor: '#4CAF50',
+    marginRight: 8,
+  },
+  yellowDot: {
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
+    backgroundColor: '#FFC107',
     marginRight: 8,
   },
   idleText: {
@@ -174,6 +224,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
     color: '#000',
+  },
+  endButton: {
+    backgroundColor: '#FF6B6B', // Red color for end/stop action
   },
   gridContainer: {
     flexDirection: 'row',

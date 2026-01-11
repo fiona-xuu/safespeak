@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
+import { SafeSpeakProvider } from '@/contexts/SafeSpeakContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 
@@ -60,7 +61,9 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <SafeSpeakProvider>
+        <RootLayoutNav />
+      </SafeSpeakProvider>
     </AuthProvider>
   );
 }

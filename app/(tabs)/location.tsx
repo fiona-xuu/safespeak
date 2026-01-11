@@ -1,3 +1,4 @@
+import { useSafeSpeak } from '@/contexts/SafeSpeakContext';
 import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,8 @@ export default function LocationScreen() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState<Location.LocationSubscription | null>(null);
+  const [forceUpdateInterval, setForceUpdateInterval] = useState<NodeJS.Timeout | null>(null);
+  const { status, setStatus } = useSafeSpeak();
 
   useEffect(() => {
     return () => {
@@ -32,6 +35,7 @@ export default function LocationScreen() {
 
       setIsTracking(true);
       setErrorMsg(null);
+      setStatus('has_used_features');
 
       // Start watching position
       const subscription = await Location.watchPositionAsync(
@@ -177,11 +181,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 36,
     height: 36,
+    zIndex: 1,
   },
   scrollContent: {
     padding: 20,
     paddingTop: 80,
     paddingBottom: 40,
+    zIndex: 2,
   },
   title: {
     fontFamily: 'System',
