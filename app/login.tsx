@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 // Asset Constants
 const imgEllipse1 = "https://www.figma.com/api/mcp/asset/24a3fb9e-ec4e-4ead-884d-ce070a618429";
@@ -16,9 +17,38 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // Navigate to tabs upon login
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter both email and password.");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.log("Login Error:", error); // Debugging log
+      // Check for generic invalid credentials message (covers both wrong password and user not found)
+      if (error.message.toLowerCase().includes("invalid login credentials")) {
+        Alert.alert(
+          "Account Not Found or Incorrect Password",
+          "If you don't have an account, please sign up. Otherwise, check your password.",
+          [
+            { text: "Try Again", style: "cancel" },
+            { text: "Sign Up", onPress: () => router.push('/signup') }
+          ]
+        );
+      } else {
+        Alert.alert("Login Failed", error.message);
+      }
+      setLoading(false);
+    } else {
+      // AuthProvider will handle navigation
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,7 +59,7 @@ export default function LoginScreen() {
       <Image 
         source={{ uri: imgEllipse1 }} 
         style={styles.bgEllipse} 
-        contentFit="cover"
+        resizeMode="cover"
       />
 
       {/* Decorative Elements */}
@@ -116,7 +146,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    // Ensure content is accessible
     minHeight: 800, 
   },
   bgEllipse: {
@@ -214,4 +243,3 @@ const styles = StyleSheet.create({
     height: 36,
   }
 });
-

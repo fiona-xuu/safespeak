@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Feather, SimpleLineIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 // Asset Constants
 const imgEllipse1 = "https://www.figma.com/api/mcp/asset/4ac6a033-9603-4210-8f80-e930e47c060f";
@@ -17,9 +18,33 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSignup = () => {
-    // Navigate to tabs upon signup
-    router.replace('/(tabs)');
+  const handleSignup = async () => {
+    if (!email || !password || !username) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    setLoading(true);
+    const { data: { session }, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username,
+        },
+      },
+    });
+
+    if (error) {
+      Alert.alert("Signup Failed", error.message);
+      setLoading(false);
+    } else {
+      if (!session) {
+        Alert.alert("Please check your inbox for email verification!");
+      }
+      setLoading(false);
+      // AuthProvider will handle navigation if session is created immediately (often requires email confirmation)
+    }
   };
 
   return (
@@ -30,13 +55,13 @@ export default function SignupScreen() {
       <Image 
         source={{ uri: imgEllipse1 }} 
         style={styles.bgEllipse} 
-        contentFit="cover"
+        resizeMode="cover"
       />
 
       {/* Decorative Elements */}
       <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 314, top: 766 }]} />
       <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 211, top: 590 }]} />
-      <Image source={{ uri: imgGroup18894 }} style={[styles.decoStar, { left: 96, top: 686 }]} />
+      <Image source={{ uri: imgGroup18924 }} style={[styles.decoStar, { left: 96, top: 686 }]} />
       <Image source={{ uri: imgGroup18924 }} style={[styles.decoStar, { left: 29, top: 785 }]} />
       <Image source={{ uri: imgGroup18924 }} style={[styles.decoStar, { left: 332, top: 593 }]} />
 
@@ -227,4 +252,3 @@ const styles = StyleSheet.create({
     height: 36,
   }
 });
-
