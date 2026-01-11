@@ -213,14 +213,16 @@ export default function VoiceScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Mascot Image */}
-      <View style={styles.mascotContainer}>
-        <Image
-          source={{ uri: imgGeminiGeneratedImageSngzz8Sngzz8SngzRemovebgPreview1 }}
-          style={styles.mascot}
-          resizeMode="contain"
-        />
-      </View>
+      {/* Mascot Image - Hide during processing */}
+      {!loading && (
+        <View style={styles.mascotContainer}>
+          <Image
+            source={{ uri: imgGeminiGeneratedImageSngzz8Sngzz8SngzRemovebgPreview1 }}
+            style={styles.mascot}
+            resizeMode="contain"
+          />
+        </View>
+      )}
 
       {/* AI Response Display */}
       {response && (
