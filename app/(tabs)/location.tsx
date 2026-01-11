@@ -1,3 +1,4 @@
+import { useSafeSpeak } from '@/contexts/SafeSpeakContext';
 import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -8,6 +9,7 @@ export default function LocationScreen() {
   const [isTracking, setIsTracking] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState<Location.LocationSubscription | null>(null);
   const [forceUpdateInterval, setForceUpdateInterval] = useState<NodeJS.Timeout | null>(null);
+  const { status, setStatus } = useSafeSpeak();
 
   useEffect(() => {
     return () => {
@@ -47,6 +49,7 @@ export default function LocationScreen() {
       console.log('Starting location tracking...');
       setIsTracking(true);
       setErrorMsg(null);
+      setStatus('has_used_features');
 
       // Try a different approach - use polling instead of watchPositionAsync
       console.log('Starting location polling every 5 seconds...');
