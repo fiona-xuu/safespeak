@@ -48,7 +48,7 @@ export default function DashboardScreen() {
       
       {/* Background Hill using the SVG Component */}
       <View style={styles.bgHill}>
-        <GreenHillSvg />
+        <GreenHillSvg style={{ width: '100%', height: 305 }} />
       </View>
 
       {/* Decorative Sparkles */}
@@ -257,9 +257,9 @@ const styles = StyleSheet.create({
   mascotContainer: {
     position: 'absolute',
     right: 20,
-    bottom: 80,
-    width: 120,
-    height: 120,
+    bottom: -20,
+    width: 350,
+    height: 374,
     zIndex: 10,
   },
   mascot: {

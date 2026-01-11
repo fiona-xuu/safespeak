@@ -23,11 +23,11 @@ export async function sendAudioToLLM(uri: string): Promise<LLMResponse> {
       const blob = await response.blob();
       formData.append("file", blob, "audio.m4a");
     } else {
-      formData.append("file", {
-        uri: uri,
-        type: "audio/m4a",
-        name: "audio.m4a"
-      } as any);
+    formData.append("file", {
+      uri: uri,
+      type: "audio/m4a",
+      name: "audio.m4a"
+    } as any);
     }
 
     formData.append("model_id", "scribe_v1");
@@ -131,7 +131,7 @@ export async function sendAudioToLLM(uri: string): Promise<LLMResponse> {
       }
     } catch (e) {
         console.error("TTS Network Error:", e);
-    }
+      }
 
     return {
       textResponse: aiResponse,
@@ -143,3 +143,4 @@ export async function sendAudioToLLM(uri: string): Promise<LLMResponse> {
     throw error;
   }
 }
+  

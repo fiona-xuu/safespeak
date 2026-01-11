@@ -228,10 +228,10 @@ const styles = StyleSheet.create({
   },
   mascotContainer: {
     position: 'absolute',
-    left: 108,
-    top: 524,
-    width: 177,
-    height: 187,
+    left: 23,
+    top: 375,
+    width: 350,
+    height: 374,
   },
   mascot: {
     width: '100%',
